@@ -1,9 +1,137 @@
-<ion-view view-title="Account">
-  <ion-content>
-    <ion-list>
-    <ion-toggle  ng-model="settings.enableFriends">
-        Enable Friends
-    </ion-toggle>
-    </ion-list>
-  </ion-content>
+<ion-view view-title="Metronome">
+  <html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SimpleMetronome Basic</title>
+
+  <style>
+    body {
+      text-align: center;
+    }
+    .footer {
+      display: block;
+    }
+    a {
+      color: #15ad64;
+    }
+    .left {
+      text-align: left;
+    }
+    .center {
+      text-align: center;
+    }
+    .right {
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 id="display">120</h1>
+  <input type="number" id="tempo" placeholder="Tempo" autofocus>
+  <button id="apply">Enter</button>
+  <br><br>
+  <button id="toggle">start/stop</button>
+  <br><br>
+
+  <hr>
+
+  
+
+  <script>
+    function $(sel) {
+      return document.querySelector(sel)
+    }
+    var active = 0
+    var toggled = false
+    var tempoDefault = 120
+    var tempo = tempoDefault
+    var sound
+    function tick() {
+      sound.play()
+      //TODO render visual flash
+      console.log("tick")
+    }
+    function loop() {
+      clearInterval(active)
+      tick()
+      active = setInterval(tick, tempoGetMS())
+    }
+    function start() {
+      toggled = true
+      loop()
+    }
+    function end() {
+      toggled = false
+      clearInterval(active)
+    }
+    function update() {
+      if (toggled) {
+        start()
+      } else {
+        end()
+      }
+    }
+    function fixInput() {
+      $("#tempo").value = tempo
+      $("#tempo").select()
+    }
+    function render() {
+      $("#display").innerHTML = tempo
+    }
+    function applyTempo(num) {
+      num = Number(Math.abs(num))
+      if (isNaN(num) || num === 0) {
+        tempo = tempoDefault
+      } else {
+        tempo = num
+      }
+      render()
+    }
+    function tempoGetMS() {
+      return 1 / (tempo / 60) * 1000
+    }
+    function toggle() {
+      toggled = !toggled
+      update()
+    }
+    function UItoggle() {
+      applyTempo($("#tempo").value)
+      fixInput()
+      toggle()
+    }
+    function UIstart() {
+      applyTempo($("#tempo").value)
+      fixInput()
+      start()
+    }
+    function init() {
+      $("#tempo").addEventListener("keydown", function(evt) {
+        var key = evt.keyCode
+        var bpm = evt.target.value
+        //TODO use a unified system: start if tempo is different, toggle if same
+        if (key == 13) { //enter
+          UIstart()
+        } else if (key == 32) { //spacebar
+          UItoggle()
+        }
+      })
+      $("#tempo").addEventListener("keyup", function(evt) {
+        var key = evt.keyCode
+        if (key == 13 || key == 32) {
+          fixInput()
+        }
+      })
+      $("#toggle").addEventListener("click", UItoggle)
+      $("#apply").addEventListener("click", UIstart)
+      sound = new Howl({
+        urls: ['resources/Tick.mp3']
+      })
+    }
+    window.addEventListener("load", init)
+  </script>
+  <script async src="resources/howler.min.js"></script>
+</body>
+</html>
 </ion-view>
