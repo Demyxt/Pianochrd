@@ -1,20 +1,8 @@
 <ion-view view-title="Tuner">
 <html>
-<head></head>
-<body>
-<p>It sounds like you're playing...</p>
-<h1 id="note-name"></h1>
-<p>
-	<span>frequency (Hz):</span>
-	<span id="frequency"></span>
-</p>
-<hr>
-<button id="play-note">start/stop an E note</button>
-<hr>
-
-
+<head>
 <script>
-// Define the set of test frequencies that we'll use to analyze microphone data.
+// Define the set of test frequencies that we'll use to analyze microphone data.  tuner
 var C2 = 65.41; // C2 note, in Hz.
 var notes = [ "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" ];
 var test_frequencies = [];
@@ -122,7 +110,20 @@ function toggle_playing_note()
 	else
 		gain_node.gain.value = 0;
 }
-</script></ion-view>
+</script>
+</head>
+
+<body>
+<p>It sounds like you're playing...</p>
+<h1 id="note-name"></h1>
+<p>
+	<span>frequency (Hz):</span>
+	<span id="frequency"></span>
+</p>
+<hr>
+<button id="play-note">start/stop an E note</button>
+<hr>
 </body>
 </html>
 
+</ion-view>

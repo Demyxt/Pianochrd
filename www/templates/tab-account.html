@@ -1,137 +1,133 @@
 <ion-view view-title="Metronome">
-  <html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SimpleMetronome Basic</title>
-
-  <style>
-    body {
-      text-align: center;
-    }
-    .footer {
-      display: block;
-    }
-    a {
-      color: #15ad64;
-    }
-    .left {
-      text-align: left;
-    }
-    .center {
-      text-align: center;
-    }
-    .right {
-      text-align: right;
-    }
-  </style>
+<style type="text/css">
+body {
+  background-color: #000;
+  font-family: Helvetica, Arial, sans-serif;
+  margin: 0;
+}
+#container {
+  display: block;
+  height: 100%;
+  position: absolute;
+  width: 100%;
+}
+#container .beat {
+  border-box: box-sizing;
+  color: #FFF;
+  display: block;
+  float: left;
+  font-family: Helvetica;
+  font-size: 40px;
+  height: 100%;
+  position: relative;
+  text-align: center;
+  visibility: hidden;
+  width: 25%;
+  z-index: 0;
+}
+#red {
+  background-color: red;
+}
+#yellow {
+  background-color: orange;
+}
+#green {
+  background-color: green;
+}
+#blue {
+  background-color: blue;
+}
+#bpm {
+  position: relative;
+  z-index: 1;
+  top: 50px;
+}
+#bpm input,
+#bpm button {
+  border: solid 1px #999;
+  border-radius: 10px;
+  box-sizing: border-box;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 48px;
+  height: 80px;
+  width: calc(25% - 2px);
+  line-height: 80px;
+  padding: 0 20px;
+  text-align: center;
+}
+</style>
+  <title>Visual Metronome</title>
 </head>
 <body>
 
-  <h1 id="display">120</h1>
-  <input type="number" id="tempo" placeholder="Tempo" autofocus>
-  <button id="apply">Enter</button>
-  <br><br>
-  <button id="toggle">start/stop</button>
-  <br><br>
+<div id="container">
+  <div class="beat" id="red"></div>
+  <div class="beat" id="yellow"></div>
+  <div class="beat" id="green"></div>
+  <div class="beat" id="blue"></div>
+</div>
 
-  <hr>
+<form id="bpm">
+  <input type="number" value=120>
+  <button class="bpm--button-start">start</button>
+  <button class="bpm--button-stop">stop</button>
+</form>
 
-  
+<script type="text/javascript">
+/* VMApp object */
+var VMApp = function() {
+  this.beats     = document.getElementsByClassName('beat');
+  this.bpmForm   = document.getElementById('bpm');
+  this.bpmInput       = this.bpmForm.getElementsByTagName('input')[0];
+  this.bpmStartButton = this.bpmForm.getElementsByClassName('bpm--button-start')[0];
+  this.bpmStopButton  = this.bpmForm.getElementsByClassName('bpm--button-stop')[0];
+  this.init();
+}
+VMApp.prototype.init = function() {
+  this.clickStartButton();
+  this.clickStopButton();
+}
+VMApp.prototype.clickStartButton = function() {
+  this.bpmStartButton.addEventListener('click',function(e){
+    e.preventDefault();
+    this.clearTimer();
+    this.startTimer(this.bpmInput.value);
+  }.bind(this));
+}
+VMApp.prototype.clickStopButton = function() {
+  this.bpmStopButton.addEventListener('click',function(e){
+    e.preventDefault();
+    this.clearTimer();
+  }.bind(this));
+}
+VMApp.prototype.clearTimer = function() {
+  clearInterval(this.interval);
+  this.hideBeats();
+}
+VMApp.prototype.startTimer = function(bpm) {
+  this.interval = setInterval(this.showBeat(), (60 / bpm) * 1000);
+}
+VMApp.prototype.hideBeats = function() {
+  for (var i = 0; i < this.beats.length; i++) {
+    this.beats[i].style.visibility = 'hidden';
+  }
+}
+VMApp.prototype.showBeat = function() {
+  var beat = 0;
+  return function() {
+    var currIndex = (++beat - 1) % 4;
+    var prevIndex = (currIndex > 0) ? (currIndex - 1) : 3;
+    this.beats[prevIndex].style.visibility = 'hidden';
+    this.beats[currIndex].style.visibility = 'visible';
+  }.bind(this);
+}
+/* initialize VMApp instance */
+new VMApp();
+</script>
 
-  <script>
-    function $(sel) {
-      return document.querySelector(sel)
-    }
-    var active = 0
-    var toggled = false
-    var tempoDefault = 120
-    var tempo = tempoDefault
-    var sound
-    function tick() {
-      sound.play()
-      //TODO render visual flash
-      console.log("tick")
-    }
-    function loop() {
-      clearInterval(active)
-      tick()
-      active = setInterval(tick, tempoGetMS())
-    }
-    function start() {
-      toggled = true
-      loop()
-    }
-    function end() {
-      toggled = false
-      clearInterval(active)
-    }
-    function update() {
-      if (toggled) {
-        start()
-      } else {
-        end()
-      }
-    }
-    function fixInput() {
-      $("#tempo").value = tempo
-      $("#tempo").select()
-    }
-    function render() {
-      $("#display").innerHTML = tempo
-    }
-    function applyTempo(num) {
-      num = Number(Math.abs(num))
-      if (isNaN(num) || num === 0) {
-        tempo = tempoDefault
-      } else {
-        tempo = num
-      }
-      render()
-    }
-    function tempoGetMS() {
-      return 1 / (tempo / 60) * 1000
-    }
-    function toggle() {
-      toggled = !toggled
-      update()
-    }
-    function UItoggle() {
-      applyTempo($("#tempo").value)
-      fixInput()
-      toggle()
-    }
-    function UIstart() {
-      applyTempo($("#tempo").value)
-      fixInput()
-      start()
-    }
-    function init() {
-      $("#tempo").addEventListener("keydown", function(evt) {
-        var key = evt.keyCode
-        var bpm = evt.target.value
-        //TODO use a unified system: start if tempo is different, toggle if same
-        if (key == 13) { //enter
-          UIstart()
-        } else if (key == 32) { //spacebar
-          UItoggle()
-        }
-      })
-      $("#tempo").addEventListener("keyup", function(evt) {
-        var key = evt.keyCode
-        if (key == 13 || key == 32) {
-          fixInput()
-        }
-      })
-      $("#toggle").addEventListener("click", UItoggle)
-      $("#apply").addEventListener("click", UIstart)
-      sound = new Howl({
-        urls: ['resources/Tick.mp3']
-      })
-    }
-    window.addEventListener("load", init)
-  </script>
-  <script async src="resources/howler.min.js"></script>
 </body>
 </html>
 </ion-view>
